@@ -5,9 +5,6 @@ from fastapi_jwt_auth import AuthJWT
 from schemas import Settings
 
 
-
-
-
 app = FastAPI()
 
 app.include_router(auth_router)
