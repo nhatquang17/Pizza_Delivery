@@ -6,6 +6,8 @@ from schemas import Settings
 
 
 
+
+
 app = FastAPI()
 
 app.include_router(auth_router)
