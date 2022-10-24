@@ -4,6 +4,8 @@ from order_routers import order_router
 from fastapi_jwt_auth import AuthJWT
 from schemas import Settings
 
+
+
 app = FastAPI()
 
 app.include_router(auth_router)
