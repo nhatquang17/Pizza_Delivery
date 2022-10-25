@@ -148,6 +148,7 @@ async def register_user(
     email: str = Form(...),
     username: str = Form(...),
     password: str = Form(...),
+    password_retype: str = Form(...),
     db: Session = Depends(get_db)
 ):
     #user validate
@@ -157,6 +158,8 @@ async def register_user(
 
     if validate1 is not None or validate2 is not None:
         return {"Register status": "Username or email already exist!"}
+    if password != password_retype:
+        return {"Register status": "Password retype is incorrect!"}
     #else
 
     user_model = models.Users()

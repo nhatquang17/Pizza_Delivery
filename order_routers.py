@@ -217,7 +217,7 @@ async def list_all_orders_made(
 
 #LIST ALL ORDERS WHICH HAVE "X?" order_status
 @order_router.get("/pending_status/{order_status}")
-async def get_pending_status(
+async def get_by_order_status(
     request: Request,
     order_status: str = None,
     db: Session = Depends(get_db)
