@@ -29,6 +29,7 @@ def get_db():
     except:
         db.close()
 
+#GET ALL ORDERS OF A USER
 @order_router.get("/")
 async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
     user = await get_current_user(request)
