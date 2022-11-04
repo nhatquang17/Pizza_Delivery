@@ -8,13 +8,19 @@ from database import Base
 from sqlalchemy_utils.types import ChoiceType
 class Users(Base):
     __tablename__ = "users"
+
+    STAFF_POSITION = (
+        ('MANAGER', 'manager'),
+        ('STAFF', 'staff'),
+        ('EXECUTIVE MANAGER', 'executive manager')
+    )
     
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
     email = Column(String, unique=True)
     password = Column(String, nullable=True)
-    is_active = Column(Boolean, default=False)
-    is_staff = Column(Boolean, default=False)
+    position = Column(ChoiceType(choices=STAFF_POSITION),default="STAFF")
+
     orders = relationship('Orders', back_populates='users')
 
 

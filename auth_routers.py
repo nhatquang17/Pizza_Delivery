@@ -11,7 +11,7 @@ import models
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer, HTTPBearer
 from datetime import datetime, timedelta
 from jose import ExpiredSignatureError, jwt, JWTError
 
@@ -19,9 +19,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from typing import Union
 
-reuseable_oauth = OAuth2PasswordBearer(
-    tokenUrl="/login",
-    scheme_name="JWT"
+reuseable_oauth = HTTPBearer(
+    scheme_name='Authorization'
 )
 
 SECRET_KEY = "KlgH6AzYDeZeGwD288to79I3vTHT8wp7"
@@ -141,7 +140,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     except:
         return {"Login status": "Unknown Error"}
 
-
+# Dùng Form(...) thay vì None để path sẽ không hiện email, username, password...
 @auth_router.post("/register")
 async def register_user(
     request: Request,
@@ -149,6 +148,7 @@ async def register_user(
     username: str = Form(...),
     password: str = Form(...),
     password_retype: str = Form(...),
+    position: str = Form(...),
     db: Session = Depends(get_db)
 ):
     #user validate
@@ -168,11 +168,34 @@ async def register_user(
     
     hash_password = get_password_hash(password)
     user_model.password = hash_password
-    user_model.is_active = False
-    user_model.is_staff = False
+    user_model.position = position
 
     #Save into db
     db.add(user_model)
     db.commit()
     
     return {"Register status": "User successfully created"}
+
+#UPDATE PASSWORD
+@auth_router.put("/update-password")
+async def update_password(
+    request: Request,
+    db: Session = Depends(get_db),
+    username: str = Form(...),
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_new_password: str = Form(...)
+):
+    #Authen first
+    user_changed = db.query(models.Users).filter(models.Users.username == username).first()
+    if not user_changed:
+        return {"Result": "username doesn't exist"}
+    if user_changed.password != get_password_hash(current_password):
+        return {"Result": "Incorrect passowrd"}
+    if new_password != confirm_new_password:
+        return {"Result": "retype password is incorrect"}
+
+    user_changed.password = get_password_hash(new_password)
+    db.add(user_changed)
+    db.commit()
+    return {"Result": "Successfully changing"}

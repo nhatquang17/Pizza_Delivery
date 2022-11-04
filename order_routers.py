@@ -9,11 +9,12 @@ from sqlalchemy.sql.functions import mode
 import models
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
-from auth_routers import get_current_user
+from auth_routers import get_current_user, reuseable_oauth
 from starlette.responses import RedirectResponse
 from fastapi.responses import HTMLResponse
 from starlette import status
 from sqlalchemy_utils.types import ChoiceType
+
 
 order_router = APIRouter(
     prefix="/orders",
@@ -103,7 +104,7 @@ async def edit_order_commit(
 ):
     user = await get_current_user(request)
     if user is None:
-        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+        return {"Result": "Please login first"}
     #else:
     order_model = db.query(models.Orders).filter(models.Orders.id == order_id).first()
 
@@ -127,7 +128,7 @@ async def delete_order(
 ):
     user = await get_current_user(request)
     if user is None:
-        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+        return {"Result": "Please login first!"}
     #else:
 
     order_model = db.query(models.Orders).filter(models.Orders.id == order_id)\
@@ -211,6 +212,9 @@ async def list_all_orders_made(
     user = await get_current_user(request)
     if user is None:
         return {"Find user": "User doesn't exist"}
+    #Check author
+    if user["position"] != "MANAGER" or user["position"] != "EXECUTIVE MANAGER":
+        return {"Find user": "You are not allow to do this"}
     #else:
     all_orders = db.query(models.Orders).order_by(models.Orders.id).all()
 
@@ -227,6 +231,9 @@ async def get_by_order_status(
     user = await get_current_user(request)
     if user is None:
         return {"Find user": "User doesn't exist"}
+    #Check author
+    if user["position"] != "MANAGER" or user["position"] != "EXECUTIVE MANAGER":
+        return {"Find user": "You are not allow to do this"}
     #else:
     result_by_order_status = db.query(models.Orders).filter(models.Orders.order_status == order_status).all()
     if result_by_order_status == []:
