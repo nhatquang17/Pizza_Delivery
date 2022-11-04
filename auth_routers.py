@@ -177,8 +177,8 @@ async def register_user(
     return {"Register status": "User successfully created"}
 
 #UPDATE PASSWORD
-@auth_router.put("/update-password")
-async def update_password(
+@auth_router.put("/change-password")
+async def change_password(
     request: Request,
     db: Session = Depends(get_db),
     username: str = Form(...),
@@ -189,12 +189,12 @@ async def update_password(
     #Authen first
     user_changed = db.query(models.Users).filter(models.Users.username == username).first()
     if not user_changed:
-        return {"Result": "username doesn't exist"}
-    if user_changed.password != get_password_hash(current_password):
-        return {"Result": "Incorrect passowrd"}
+        return {"Result": "Failt to change password"}
     if new_password != confirm_new_password:
-        return {"Result": "retype password is incorrect"}
-
+        return {"Result": "Failt to change password"}
+    if not verify_password(current_password, user_changed.password):
+        return {"Result": "Failt to change password"}
+    #else:
     user_changed.password = get_password_hash(new_password)
     db.add(user_changed)
     db.commit()
